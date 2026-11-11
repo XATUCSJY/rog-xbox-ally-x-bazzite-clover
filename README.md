@@ -139,6 +139,22 @@ sudo bash remote/install-switchdeck-theme.sh
 | 左扳机 | 鼠标右键 |
 | 右扳机 | 鼠标左键 |
 
+### ⚠️ 已知问题:摇杆 Y 轴方向相反
+
+**现象**:左/右摇杆被映射为鼠标指针时,**上下方向是反的**(摇杆往上推,指针反而往下走)。
+
+**原因**:`UsbXbox360Dxe.efi` 驱动对摇杆 Y 轴的默认方向处理,且本项目使用的
+`xbox360-clover.ini` 映射文件**只提供** `LeftStickMode` / `RightStickMode`
+(值 `Mouse`)这类字段,**没有**单独的 Y 轴翻转开关,故无法通过改 ini 修正。
+
+**影响范围**:仅影响"用摇杆移动鼠标指针"的场景。Clover 列表菜单的**上下选择
+请直接用十字键**(方向正常),不受影响;选系统无需摇杆。
+
+**现状**:未修(保持现状,零风险)。若要根治需更换/重编译 UEFI 驱动以支持
+Y 轴翻转,但更换驱动可能影响手柄识别,故暂不处理。
+
+> 记录于:ROG Xbox Ally X (RC73XA) + Bazzite 实测,2026-11-11。
+
 ---
 
 ## 六、排错记录(实战踩过的坑)
@@ -152,6 +168,7 @@ sudo bash remote/install-switchdeck-theme.sh
 | 远程 sudo 反复卡 | `sudo -S` 的 stdin 被 base64 管道占用 / 中文密码提示匹配 | 改在 Bazzite 本地终端跑 `sudo bash ...` |
 | SSH 间歇连不上 | 设备休眠 / 多次失败触发 PAM 锁定 | 唤醒设备;等 90s 让锁定过期 |
 | `tar` 报 LIBARCHIVE 警告 | macOS 打包带 `._*` 扩展头 | 无害,忽略;或 `find -name '._*' -delete` |
+| 摇杆移动指针上下相反 | 驱动 Y 轴默认方向,ini 无翻转开关 | 未修;选菜单用十字键(方向正常) |
 
 ---
 
@@ -188,3 +205,22 @@ ssh-copy-id <用户名>@<IP>                 # 输一次密码
 #       User <用户名>
 # 以后直接:  ssh ally
 ```
+
+---
+
+## 九、感谢与来源
+
+本项目复用并基于以下开源项目/作品完成,特此致谢:
+
+| 组件 | 来源 | 说明 |
+|------|------|------|
+| **Clover 双系统方案(主参考)** | [Hooandee/Handheld-Clover-dualboot](https://github.com/Hooandee/Handheld-Clover-dualboot) | H 开头仓库。面向手持设备(Steam Deck / ROG Ally / Legion Go 等)的 Clover 双系统项目,含定制 Clover EFI(隐藏 OPTIONS 按钮)、Xbox 手柄驱动、主题与安装脚本。本项目的手动安装流程、`RC73XA` 支持表、手柄映射均源自此仓库 |
+| **原始上游** | [ryanrudolfoba/SteamDeck-Clover-dualboot](https://github.com/ryanrudolfoba/SteamDeck-Clover-dualboot) | Hooandee 项目 fork 自这里,感谢 ryanrudolf 的原始工作 |
+| **Clover 引导器本体** | [CloverHackyColor/CloverBootloader](https://github.com/CloverHackyColor/CloverBootloader) | 本方案使用的 `custom_clover_5157.efi`(r5157 定制,隐藏 OPTIONS 按钮) |
+| **Xbox 手柄 UEFI 驱动** | [SkorionOS/UsbXbox360Dxe](https://github.com/SkorionOS/UsbXbox360Dxe) · [chenx-dust/UsbXbox360Dxe](https://github.com/chenx-dust/UsbXbox360Dxe) · [jlobue10/UsbXbox360Dxe](https://github.com/jlobue10/UsbXbox360Dxe) | `UsbXbox360Dxe.efi`,让 Ally 内置 Xbox 手柄在 UEFI 阶段被 Clover 识别(十字键/A/B/摇杆/扳机映射) |
+| **Eclipse 主题** | [chris1111](https://github.com/chris1111) | 备选主题之一 |
+| **SwitchDeck 主题(选定)** | [adaorobles/SwitchDeck-Clover-Theme](https://github.com/adaorobles/SwitchDeck-Clover-Theme) | Nintendo Switch OLED 风格,带 Bazzite 专用图标 |
+| **ZionDeck 主题(备选)** | [adaorobles/ZionDeck-Clover-Theme](https://github.com/adaorobles/ZionDeck-Clover-Theme) | Steam Deck 风格 |
+
+> 上述作品均为开源,保留原作者署名。本项目仅做**手动安装整合 + 文档 + 排错记录**,
+> 未修改任何上游二进制。
